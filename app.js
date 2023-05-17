@@ -22,7 +22,7 @@ app.post('/', (req, res) => {
     res.render('demopdf', { data: req.body.article }, function (err, html) {
 
 
-        const filePath = './public/uploads/demopdf.pdf';
+        const filePath = './demopdf.pdf';
 
         pdf.create(html, options).toFile(filePath, (err, result) => {
           if (err) {
