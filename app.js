@@ -70,10 +70,41 @@ app.post('/test', (req, res) => {
         .catch(err => {
             console.error('Error:', err);
             res.status(400).json({
-                message:"error"
+                message: "error"
             });
             return false;
         });
+
+})
+
+var pdf = require('html-pdf');
+var options = { format: 'A4' };
+
+
+app.post('/email', (req, res) => {
+
+    const content = req.body.htmlString;//'<html><body><h1>Hello, World!</h1></body></html>';
+    pdf.create(content, options).toFile('./BonDeCommande.pdf', function (err, result) {
+        if (err) {
+            console.log("error");
+            res.status(400).json({
+                message: "error"
+
+            });
+            return true;
+        }
+        else {
+            console.log("succes");
+            res.status(200).json({
+                message: fs.readFileSync('./BonDeCommande.pdf').toString('base64')
+
+            });
+            return true;
+        }
+    });
+
+
+
 
 })
 
