@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', (req, res) => {
+
     res.render('demopdf', { data: req.body.article }, function (err, html) {
         pdf.create(html, options).toFile('./public/uploads/demopdf.pdf', function (err, result) {
             if (err) {
@@ -25,9 +26,14 @@ app.post('/', (req, res) => {
             }
             else {
                 console.log(res);
-                var datafile = fs.readFileSync('./public/uploads/demopdf.pdf');
-                res.header('content-type', 'application/pdf');
-                res.send(datafile);
+                var datafile = fs.readFileSync('./public/uploads/demopdf.pdf').toString('base64');
+                // res.header('content-type', 'application/pdf');
+                // res.send(datafile);
+
+                res.status(200).json({
+                    message: datafile
+                });
+                return true;
             }
         });
     })
