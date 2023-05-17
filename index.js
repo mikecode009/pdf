@@ -30,7 +30,7 @@ async function getTemplateHtml() {
 
 
 app.post('/', (req, response) => {
-
+    let content = req.body.html;
     let data = {};
 
     getTemplateHtml()
@@ -40,7 +40,7 @@ app.post('/', (req, response) => {
             // console.log(res)
 
             console.log("res " + res)
-            let content = "<html><body><h1>Hello, World!</h1></body></html>";
+          
             console.log("Compiing the template with handlebars")
             const template = hb.compile(content, { strict: true });
             // we have compile our code with handlebars
