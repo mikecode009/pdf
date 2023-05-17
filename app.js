@@ -70,7 +70,7 @@ app.post('/test', (req, res) => {
         .catch(err => {
             console.error('Error:', err);
             res.status(400).json({
-                message:error
+                message:"error"
             });
             return false;
         });
