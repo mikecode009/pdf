@@ -11,9 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "chrome-aws-lambda": "10.1.0",
     "ejs": "^3.0.1",
     "express": "^4.17.1",
     "html-pdf": "^2.2.0",
-    "puppeteer": "^20.2.1"
+    "puppeteer": "^20.2.1",
+    "puppeteer-core": "^10.4.0"
   }
 }
