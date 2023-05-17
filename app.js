@@ -22,7 +22,11 @@ app.post('/', (req, res) => {
     res.render('demopdf', { data: req.body.article }, function (err, html) {
         pdf.create(html, options).toFile('./public/uploads/demopdf.pdf', function (err, result) {
             if (err) {
-                return console.log(err);
+          //      return console.log(err);
+                res.status(400).json({
+                    message: "error"
+                });
+                return true;
             }
             else {
                 console.log(res);
