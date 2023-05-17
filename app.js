@@ -65,10 +65,14 @@ app.post('/test', (req, res) => {
             res.status(200).json({
                 message: pdfString
             });
-            return false;
+            return true;
         })
         .catch(err => {
             console.error('Error:', err);
+            res.status(400).json({
+                message:error
+            });
+            return false;
         });
 
 })
