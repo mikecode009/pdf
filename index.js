@@ -68,7 +68,7 @@ app.post('/', (req, response) => {
 
             const msg = {
                 to: 'mike.java.code@gmail.com',
-                from: 'contact@you-move.fr',
+                from: 'contact@coq-chauffeur.site',
                 subject: 'COQ Bon de commande',
                 text: 'Hello plain world!',
                 html: content,
