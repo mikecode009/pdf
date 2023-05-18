@@ -68,14 +68,15 @@ app.post('/', (req, response) => {
 
             const msg = {
                 to: 'mike.java.code@gmail.com',
-                from: 'contact@coq-chauffeur.site',
+                // from: 'contact@coq-chauffeur.site',
+                from: 'contact@allocoq.fr',
                 subject: 'COQ Bon de commande',
                 text: 'Hello plain world!',
                 html: content,
                 attachments: [
                     {
                         // content: fs.readFileSync(invoicePath2).toString('base64'),
-                        content: readFile('invoice.pdf', 'utf8').toString('base64'),
+                        content:  fs.readFileSync('invoice.pdf').toString('base64'),
                         filename: 'BonDeCommande.pdf',
                         type: 'application/pdf',
                         disposition: 'attachment'
