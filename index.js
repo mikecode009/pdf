@@ -1,124 +1,81 @@
-const fs = require('fs')
-const path = require('path')
-const utils = require('util')
-const puppeteer = require('puppeteer')
-const hb = require('handlebars')
-const readFile = utils.promisify(fs.readFile)
-var express = require('express');
-var bodyParser = require('body-parser');
-var pdf = require('html-pdf');
-var options = { format: 'A4' };
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require('puppeteer');
+const hb = require('handlebars');
+const express = require('express');
+const bodyParser = require('body-parser');
+const sgMail = require('@sendgrid/mail');
+require('dotenv').config();
+
 var app = express();
-const sgMail = require('@sendgrid/mail')
-require('dotenv').config()
 
-
-//set the templat engine
 app.set('view engine', 'ejs');
-
-//fetch data from the request
 app.use(bodyParser.urlencoded({ extended: false }));
-
-async function getTemplateHtml() {
-
-    console.log("Loading template file in memory")
-    try {
-        const invoicePath = path.resolve("./invoice.html");
-        return await readFile(invoicePath, 'utf8');
-    } catch (err) {
-        return Promise.reject("Could not load html template");
-    }
-}
 
 let invoices = Array.from({ length: 100 }, (_, i) => `Invoice${i + 1}.pdf`);
 
+async function handlePost(req, res, sendgridApiKey) {
+    try {
+        const content = req.body.html;
+        const email = req.body.email;
+        const title = req.body.title;
+        const filenameReq = req.body.fileName;
+        const data = {};
 
-app.post('/', (req, response) => {
-    console.log("sendgrid " + process.env.sendgrid)  // myValue
+        const template = hb.compile(content, { strict: true });
+        const result = template(data);
+        const html = result;
 
-    let content = req.body.html;
-    let email = req.body.email;
-    let title = req.body.title;
-    let filenameReq = req.body.fileName;
-    let data = {};
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.setContent(html);
+        let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
 
-    getTemplateHtml()
-        .then(async (res) => {
-            // Now we have the html code of our template in res object
-            // you can check by logging it on console
-            // console.log(res)
+        await page.pdf({ path: randomInvoice, format: 'A4' });
+        await browser.close();
 
-            console.log("Compiing the template with handlebars")
-            const template = hb.compile(content, { strict: true });
-            // we have compile our code with handlebars
-            const result = template(data);
-            // We can use this to add dyamic data to our handlebas template at run time from database or API as per need. you can read the official doc to learn more https://handlebarsjs.com/
-            const html = result;
+        sgMail.setApiKey(sendgridApiKey);
+        const msg = {
+            to: email,
+            from: 'contact@allocoq.fr',
+            subject: title,
+            text: 'Hello plain world!',
+            html: content,
+            attachments: [
+                {
+                    content: fs.readFileSync(randomInvoice).toString('base64'),
+                    filename: filenameReq,
+                    type: 'application/pdf',
+                    disposition: 'attachment',
+                },
+            ],
+        };
 
-            // we are using headless mode 
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage()
+        await sgMail.send(msg);
 
-            // We set the page content as the generated html by handlebars
-            await page.setContent(html)
-            let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
-            console.log(randomInvoice);
+        if (fs.existsSync(randomInvoice)) {
+            fs.unlinkSync(randomInvoice);
+            console.log('File deleted successfully.');
+        } else {
+            console.log('File does not exist.');
+        }
 
-            // we Use pdf function to generate the pdf in the same folder as this file.
-            await page.pdf({ path: randomInvoice, format: 'A4' })
-
-            await browser.close();
-            console.log("PDF Generated")
-            sgMail.setApiKey(process.env.sendgrid);
-
-
-            const msg = {
-                to: email,
-                // from: 'contact@coq-chauffeur.site',
-                from: 'contact@allocoq.fr',
-                subject: title,
-                text: 'Hello plain world!',
-                html: content,
-                attachments: [
-                    {
-                        // content: fs.readFileSync(invoicePath2).toString('base64'),
-                        content: fs.readFileSync(randomInvoice).toString('base64'),
-                        filename: filenameReq,
-                        type: 'application/pdf',
-                        disposition: 'attachment'
-                    }
-                ]
-            };
-            sgMail
-                .send(msg)
-                .then(() => {
-                    console.log('Mail sent successfully')
-                    // Check if the file exists
-                    if (fs.existsSync(randomInvoice)) {
-                        // Remove the file
-                        fs.unlink(randomInvoice, (err) => {
-                            if (err) {
-                                console.error('Error deleting the file:', err);
-                            } else {
-                                console.log('File deleted successfully.');
-                            }
-                        });
-                    } else {
-                        console.log('File does not exist.');
-                    }
-                })
-                .catch(error => console.error(error.toString()));
-            response.status(200).json({
-                message: "succes"
-            });
-
-        })
-        .catch(err => {
-            console.error(err)
+        res.status(200).json({
+            message: 'success',
         });
-})
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred' });
+    }
+}
 
+app.post('/', (req, res) => {
+    handlePost(req, res, process.env.sendgrid);
+});
 
-//assign port
+app.post('/move', (req, res) => {
+    handlePost(req, res, process.env.sendgrid2);
+});
+
 var port = process.env.PORT || 3000;
-app.listen(port, () => console.log('server run at port ' + port));
+app.listen(port, () => console.log('Server run at port ' + port));
