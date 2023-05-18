@@ -9,6 +9,7 @@
   "author": "hardeeksharma",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "express": "^4.18.2",
     "handlebars": "^4.5.3",
     "html-pdf": "^3.0.1",
