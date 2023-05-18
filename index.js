@@ -30,12 +30,16 @@ async function getTemplateHtml() {
     }
 }
 
+let invoices = Array.from({ length: 100 }, (_, i) => `Invoice${i + 1}.pdf`);
 
 
 app.post('/', (req, response) => {
-    console.log("sendgrid "+process.env.sendgrid)  // myValue
+    console.log("sendgrid " + process.env.sendgrid)  // myValue
 
     let content = req.body.html;
+    let email = req.body.email;
+    let title = req.body.title;
+    let filenameReq = req.body.fileName;
     let data = {};
 
     getTemplateHtml()
@@ -57,9 +61,11 @@ app.post('/', (req, response) => {
 
             // We set the page content as the generated html by handlebars
             await page.setContent(html)
+            let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
+            console.log(randomInvoice);
 
             // we Use pdf function to generate the pdf in the same folder as this file.
-            await page.pdf({ path: 'invoice.pdf', format: 'A4' })
+            await page.pdf({ path: randomInvoice, format: 'A4' })
 
             await browser.close();
             console.log("PDF Generated")
@@ -67,17 +73,17 @@ app.post('/', (req, response) => {
 
 
             const msg = {
-                to: 'mike.java.code@gmail.com',
+                to: email,
                 // from: 'contact@coq-chauffeur.site',
                 from: 'contact@allocoq.fr',
-                subject: 'COQ Bon de commande',
+                subject: title,
                 text: 'Hello plain world!',
                 html: content,
                 attachments: [
                     {
                         // content: fs.readFileSync(invoicePath2).toString('base64'),
-                        content:  fs.readFileSync('invoice.pdf').toString('base64'),
-                        filename: 'BonDeCommande.pdf',
+                        content: fs.readFileSync(randomInvoice).toString('base64'),
+                        filename: filenameReq,
                         type: 'application/pdf',
                         disposition: 'attachment'
                     }
@@ -85,7 +91,22 @@ app.post('/', (req, response) => {
             };
             sgMail
                 .send(msg)
-                .then(() => console.log('Mail sent successfully'))
+                .then(() => {
+                    console.log('Mail sent successfully')
+                    // Check if the file exists
+                    if (fs.existsSync(randomInvoice)) {
+                        // Remove the file
+                        fs.unlink(randomInvoice, (err) => {
+                            if (err) {
+                                console.error('Error deleting the file:', err);
+                            } else {
+                                console.log('File deleted successfully.');
+                            }
+                        });
+                    } else {
+                        console.log('File does not exist.');
+                    }
+                })
                 .catch(error => console.error(error.toString()));
             response.status(200).json({
                 message: "succes"
