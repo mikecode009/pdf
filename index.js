@@ -19,7 +19,7 @@ async function handlePost(req, res, sendgridApiKey) {
         const content = req.body.html;
         const email = req.body.email;
         const title = req.body.title;
-        const filenameReq = req.body.fileName;
+        const filenameReq = req.body.fileName || 'attachment.pdf';;
         const data = {};
 
         const template = hb.compile(content, { strict: true });
