@@ -51,14 +51,20 @@ async function handlePost(req, res, sendgridApiKey) {
             ],
         };
 
-        await sgMail.send(msg);
-
-        if (fs.existsSync(randomInvoice)) {
-            fs.unlinkSync(randomInvoice);
-            console.log('File deleted successfully.');
-        } else {
-            console.log('File does not exist.');
-        }
+        sgMail.send(msg).then(() => {
+            console.log('Email sent successfully.');
+        })
+            .catch((error) => {
+                console.error('Failed to send email.', error);
+            })
+            .finally(() => {
+                if (fs.existsSync(randomInvoice)) {
+                    fs.unlinkSync(randomInvoice);
+                    console.log('File deleted successfully.');
+                } else {
+                    console.log('File does not exist.');
+                }
+            });
 
         res.status(200).json({
             message: 'success',
