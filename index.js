@@ -74,7 +74,7 @@ async function handlePost(req, res, sendgridApiKey) {
         res.status(500).json({ error: 'An error occurred' });
     }
 }
-
+ 
 app.post('/', (req, res) => {
     handlePost(req, res, process.env.sendgrid);
 });
