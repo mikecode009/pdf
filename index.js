@@ -86,7 +86,7 @@ app.post('/move', (req, res) => {
 
 
 app.post('/test', (req, res) => {
-    res.status(200).json({ message: 'hello' });
+    res.send('Hello, World!');
 });
 var port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Server run at port ' + port));
