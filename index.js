@@ -28,8 +28,8 @@ async function handlePost(req, res, sendgridApiKey) {
         const html = result;
         console.log("puppeteer.launch ");
         // const browser = await puppeteer.launch();
-        const browser = await puppeteer.launch({ timeout: 60000 }); // Increase timeout to 60 seconds
-        // const browser = await puppeteer.launch({ ignoreDefaultArgs: ['--disable-extensions'], args: ['--no-sandbox'] });
+        // const browser = await puppeteer.launch({ timeout: 60000 }); // Increase timeout to 60 seconds
+        const browser = await puppeteer.launch({ ignoreDefaultArgs: ['--disable-extensions'], args: ['--no-sandbox'] });
 
         console.log("browser.newPage ");
         const page = await browser.newPage();
