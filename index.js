@@ -85,7 +85,7 @@ app.post('/move', (req, res) => {
 });
 
 
-app.post('/test', (req, res) => {
+app.get('/test', (req, res) => {
     res.send('Hello, World!');
 });
 var port = process.env.PORT || 3000;
