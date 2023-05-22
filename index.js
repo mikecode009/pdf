@@ -15,6 +15,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 let invoices = Array.from({ length: 100 }, (_, i) => `Invoice${i + 1}.pdf`);
 
 async function handlePost(req, res, sendgridApiKey) {
+    console.log('handlePost');
+
     try {
         const content = req.body.html;
         const email = req.body.email;
@@ -26,24 +28,24 @@ async function handlePost(req, res, sendgridApiKey) {
         const template = hb.compile(content, { strict: true });
         const result = template(data);
         const html = result;
-        console.log("puppeteer.launch ");
+        // console.log("puppeteer.launch ");
         // const browser = await puppeteer.launch();
         // const browser = await puppeteer.launch({ timeout: 60000 }); // Increase timeout to 60 seconds
         const browser = await puppeteer.launch({ ignoreDefaultArgs: ['--disable-extensions'], args: ['--no-sandbox'] });
 
-        console.log("browser.newPage ");
+        // console.log("browser.newPage ");
         const page = await browser.newPage();
-        console.log("page.setConten");
+        // console.log("page.setConten");
         await page.setContent(html);
         let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
 
         await page.pdf({ path: randomInvoice, format: 'A4' });
         await browser.close();
-        console.log("content " + content);
-        console.log("email " + email);
-        console.log("title " + title);
-        console.log("filenameReq " + filenameReq);
-        console.log("emailSender " + emailSender);
+        // console.log("content " + content);
+        // console.log("email " + email);
+        // console.log("title " + title);
+        // console.log("filenameReq " + filenameReq);
+        // console.log("emailSender " + emailSender);
         sgMail.setApiKey(sendgridApiKey);
         const msg = {
             to: email,
