@@ -18,9 +18,9 @@ async function handlePost(req, res, sendgridApiKey) {
     try {
         const content = req.body.html;
         const email = req.body.email;
-        const emailSender = req.body.emailSender;
+        const emailSender = req.body.emailSender|| 'contact@allocoq.fr';
         const title = req.body.title;
-        const filenameReq = req.body.fileName || 'attachment.pdf';;
+        const filenameReq = req.body.fileName || 'attachment.pdf';
         const data = {};
 
         const template = hb.compile(content, { strict: true });
@@ -34,7 +34,11 @@ async function handlePost(req, res, sendgridApiKey) {
 
         await page.pdf({ path: randomInvoice, format: 'A4' });
         await browser.close();
-
+        console.log("content " + content);
+        console.log("email " + email);
+        console.log("title " + title);
+        console.log("filenameReq " + filenameReq);
+        console.log("emailSender " + emailSender);
         sgMail.setApiKey(sendgridApiKey);
         const msg = {
             to: email,
@@ -75,17 +79,22 @@ async function handlePost(req, res, sendgridApiKey) {
         res.status(500).json({ error: 'An error occurred' });
     }
 }
- 
+
 app.post('/', (req, res) => {
+    console.log('/ coq');
+
     handlePost(req, res, process.env.sendgrid);
 });
 
 app.post('/move', (req, res) => {
+    console.log('/move');
+
     handlePost(req, res, process.env.sendgrid2);
 });
 
 
 app.get('/test', (req, res) => {
+    console.log('/test');
     res.send('Hello, World!');
 });
 var port = process.env.PORT || 3000;
