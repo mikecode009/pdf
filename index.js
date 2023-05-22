@@ -18,7 +18,7 @@ async function handlePost(req, res, sendgridApiKey) {
     try {
         const content = req.body.html;
         const email = req.body.email;
-        const emailSender = req.body.emailSender|| 'contact@allocoq.fr';
+        const emailSender = req.body.emailSender || 'contact@allocoq.fr';
         const title = req.body.title;
         const filenameReq = req.body.fileName || 'attachment.pdf';
         const data = {};
@@ -26,9 +26,11 @@ async function handlePost(req, res, sendgridApiKey) {
         const template = hb.compile(content, { strict: true });
         const result = template(data);
         const html = result;
-
+        console.log("puppeteer.launch ");
         const browser = await puppeteer.launch();
+        console.log("browser.newPage ");
         const page = await browser.newPage();
+        console.log("page.setConten");
         await page.setContent(html);
         let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
 
