@@ -18,6 +18,7 @@ async function handlePost(req, res, sendgridApiKey) {
     try {
         const content = req.body.html;
         const email = req.body.email;
+        const emailSender = req.body.emailSender;
         const title = req.body.title;
         const filenameReq = req.body.fileName || 'attachment.pdf';;
         const data = {};
@@ -37,7 +38,7 @@ async function handlePost(req, res, sendgridApiKey) {
         sgMail.setApiKey(sendgridApiKey);
         const msg = {
             to: email,
-            from: 'contact@allocoq.fr',
+            from: "contact@allocoq.fr",
             subject: title,
             text: 'Hello plain world!',
             html: content,
@@ -83,5 +84,9 @@ app.post('/move', (req, res) => {
     handlePost(req, res, process.env.sendgrid2);
 });
 
+
+app.post('/test', (req, res) => {
+    res.status(200).json({ message: 'hello' });
+});
 var port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Server run at port ' + port));
