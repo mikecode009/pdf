@@ -104,5 +104,89 @@ app.get('/test', (req, res) => {
     console.log('/test');
     res.send('Hello, World!');
 });
+
+app.post('/email-key', (req, res) => {
+    console.log('/email-key');
+
+    handlePostkey(req, res);
+});
+
+
+
+
+async function handlePostkey(req, res, sendgridApiKey) {
+    console.log('handlePost');
+
+    try {
+        const content = req.body.html;
+        const email = req.body.email;
+        const emailSender = req.body.emailSender || 'contact@allocoq.fr';
+        const title = req.body.title;
+        const filenameReq = req.body.fileName || 'attachment.pdf';
+        const sendgridApiKey = req.body.sendgridApiKey || process.env.sendgrid;
+
+        const data = {};
+
+        const template = hb.compile(content, { strict: true });
+        const result = template(data);
+        const html = result;
+        // console.log("puppeteer.launch ");
+        // const browser = await puppeteer.launch();
+        // const browser = await puppeteer.launch({ timeout: 60000 }); // Increase timeout to 60 seconds
+        const browser = await puppeteer.launch({ ignoreDefaultArgs: ['--disable-extensions'], args: ['--no-sandbox'] });
+
+        // console.log("browser.newPage ");
+        const page = await browser.newPage();
+        // console.log("page.setConten");
+        await page.setContent(html);
+        let randomInvoice = invoices[Math.floor(Math.random() * invoices.length)];
+
+        await page.pdf({ path: randomInvoice, format: 'A4' });
+        await browser.close();
+        // console.log("content " + content);
+        // console.log("email " + email);
+        // console.log("title " + title);
+        // console.log("filenameReq " + filenameReq);
+        console.log("emailSender " + emailSender);
+        sgMail.setApiKey(sendgridApiKey);
+        const msg = {
+            to: email,
+            from: emailSender,
+            subject: title,
+            text: 'Hello plain world!',
+            html: content,
+            attachments: [
+                {
+                    content: fs.readFileSync(randomInvoice).toString('base64'),
+                    filename: filenameReq,
+                    type: 'application/pdf',
+                    disposition: 'attachment',
+                },
+            ],
+        };
+
+        sgMail.send(msg).then(() => {
+            console.log('Email sent successfully.');
+        })
+            .catch((error) => {
+                console.error('Failed to send email.', error);
+            })
+            .finally(() => {
+                if (fs.existsSync(randomInvoice)) {
+                    fs.unlinkSync(randomInvoice);
+                    console.log('File deleted successfully.');
+                } else {
+                    console.log('File does not exist.');
+                }
+            });
+
+        res.status(200).json({
+            message: 'success',
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred' });
+    }
+}
 var port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Server run at port ' + port));
